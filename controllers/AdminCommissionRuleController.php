@@ -322,6 +322,7 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
         $this->setEventId('gridAffCommissionRule');
         $this->setRecordTitle(___('Commission Rule'));
         $this->addField('comment', ___('Comment'))->setRenderFunction(array($this, 'renderComment'));
+        $this->addField('tier', ___('Tier'))->setRenderFunction(array($this, 'renderTier'));
         $this->addField('sort_order', ___('Sort'))->setRenderFunction(array($this, 'renderSort'));
         $this->addField('_commission', ___('Commission'), false)->setRenderFunction(array($this, 'renderCommission'));
         $this->addField('_conditions', ___('Conditions'), false)->setRenderFunction(array($this, 'renderConditions'));
@@ -363,6 +364,15 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
             $text = $this->escape($rule->comment);
         }
         return "<td>$text</td>\n";
+    }
+
+    public function renderTier(AffCommissionRule $rule)
+    {
+        if ($rule->tier > 0) {
+          return "<td>{$rule->tier}</td>\n";
+        }else{
+          return "<td>-</td>\n";
+        }
     }
 
     public function _valuesToForm(& $values, AffCommissionRule $record)
