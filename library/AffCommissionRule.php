@@ -374,8 +374,8 @@ class AffCommissionRule extends Am_Record
         $text = "";
         if ($this->type == AffCommissionRule::TYPE_MULTI)
             return ___('commission found by next rules') . '&times; ' . $this->multi;
-        if ($this->type == AffCommissionRule::TYPE_GLOBAL && $this->tier>0)
-            return $this->first_payment_c . '%';
+        // if ($this->type == AffCommissionRule::TYPE_GLOBAL && $this->tier>0)
+        //     return $this->first_payment_c . '%';
         foreach (array('first_payment' => ___('First Payment'), 'recurring' => ___('Second and Subsequent Payments'), 'free_signup' => ___('Free Signup')) as $fieldName => $label)
         {
             if ($this->get($fieldName . '_c') <= 0) continue;
@@ -470,10 +470,16 @@ class AffCommissionRuleTable extends Am_Table
             array_push($matchedRules, $rule);
             // Second tier commission have to be calculated as percent from First tier commission.
             if ($tier > 0) {
-                $comm = moneyRound($rule->first_payment_c * $paidForItem / 100);
+                // First Payment
+                if ($isFirst) {
+                  // code...
+                  $comm = moneyRound($rule->first_payment_c * $paidForItem / 100);
+                }else {
+                  // Recurring payment
+                  $comm = moneyRound($rule->recurring_c * $paidForItem / 100);
+                }
                 break;
             }
-
             if ($rule->type == AffCommissionRule::TYPE_MULTI) {
                 $multi *= $rule->multi;
             } else {

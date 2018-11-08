@@ -184,7 +184,6 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
             echo str_repeat("-", 70) . "\n";
 
         }
-
         //COMMISSION FOR FIRST PAYMENT
         $price_field = (float)$invoice->first_total ? 'first_total' : 'second_total';
         $prefix = (float)$invoice->first_total ? 'first_' : 'second_';
@@ -322,7 +321,7 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
         $this->setEventId('gridAffCommissionRule');
         $this->setRecordTitle(___('Commission Rule'));
         $this->addField('comment', ___('Comment'))->setRenderFunction(array($this, 'renderComment'));
-        $this->addField('tier', ___('Tier'))->setRenderFunction(array($this, 'renderTier'));
+        // $this->addField('tier', ___('Tier'))->setRenderFunction(array($this, 'renderTier'));
         $this->addField('sort_order', ___('Sort'))->setRenderFunction(array($this, 'renderSort'));
         $this->addField('_commission', ___('Commission'), false)->setRenderFunction(array($this, 'renderCommission'));
         $this->addField('_conditions', ___('Conditions'), false)->setRenderFunction(array($this, 'renderConditions'));
@@ -366,14 +365,14 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
         return "<td>$text</td>\n";
     }
 
-    public function renderTier(AffCommissionRule $rule)
-    {
-        if ($rule->tier > 0) {
-          return "<td>{$rule->tier}</td>\n";
-        }else{
-          return "<td>-</td>\n";
-        }
-    }
+    // public function renderTier(AffCommissionRule $rule)
+    // {
+    //     if ($rule->tier > 0) {
+    //       return "<td>{$rule->tier}</td>\n";
+    //     }else{
+    //       return "<td>-</td>\n";
+    //     }
+    // }
 
     public function _valuesToForm(& $values, AffCommissionRule $record)
     {
@@ -519,7 +518,6 @@ CUT
             $form->addInteger('tier')
                 ->setLabel(___("Tier\nTier for custom commission"));
         }
-
         if (!$record->isGlobal()) // add conditions
         {
             $set = $form->addFieldset('', array('id'=>'conditions'))
@@ -732,6 +730,8 @@ CUT
         } else {
             $set->addText('first_payment_c')
                 ->setLabel(___("Commission\n% of commission received by referred affiliate"));
+            $set->addElement(new Am_Form_Element_AffCommissionSize(null, null, 'recurring'))
+                ->setLabel(___("Commission for Rebills\n% of commission received by referred affiliate on recurring payment"));
         }
         if (!$record->isGlobal())
         {
