@@ -457,6 +457,13 @@ class Bootstrap_Aff extends Am_Module
                             'label' => ___('Statistics'),
                         ),
                         array(
+                            'id' => 'aff-treeview',
+                            'controller' => 'member',
+                            'module' => 'aff',
+                            'action' => 'treeview',
+                            'label' => ___('Treeview'),
+                        ),
+                        array(
                             'id' => 'aff-payout-info',
                             'controller' => 'member',
                             'module' => 'aff',
@@ -522,6 +529,13 @@ class Bootstrap_Aff extends Am_Module
                     'module' => 'aff',
                     'label' => ___('Banners and Text Links'),
                     'resource' => self::ADMIN_PERM_ID_BANNERS,
+                ),
+                array(
+                  'id' => 'affiliates-treeview',
+                  'controller' => 'admin-treeview',
+                  'module' => 'aff',
+                  'label' => ___('Treeview'),
+                  'resource' => self::ADMIN_PERM_ID_BANNERS,
                 )
                 ),
                 !Am_Di::getInstance()->config->get('manually_approve') && (Am_Di::getInstance()->config->get('aff.signup_type') != 2) ? array() : array(array(
@@ -927,14 +941,14 @@ CUT
                     break;
                 case self::MODEL_LAST_CLICK_WINS :
                     $aff_id = $this->findAffId($aff_source);
-                    break; 
+                    break;
                 case self::MODEL_HYBRID :
                     $aff_id = $this->findAffId($aff_source);
                     if(empty($aff_id) && $invoice->getUser())
                     {
                         $aff_id = $invoice->getUser()->aff_id;
                     }
-                    
+
             }
 
         if ($aff_id && empty($invoice->aff_id)) // set aff_id to invoice for quick access next time

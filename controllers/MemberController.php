@@ -150,6 +150,46 @@ class Aff_MemberController extends Am_Mvc_Controller
         $this->view->display('aff/stats.phtml');
     }
 
+    public function treeviewAction()
+    {
+        $this->view->title = ___("Your downline");
+        $user = $this->user;
+        function render($upline) {
+            $downlines = Am_Di::getInstance()->db->select("SELECT * FROM ?_user WHERE aff_id = {$upline['user_id']} ORDER BY LOGIN ASC");
+            $html = "";
+            if (count($downlines) > 0) {
+              $html .= sprintf('<li>
+                  <input type="checkbox" class="expander">
+                  <span class="expander"></span>
+                  <label>%s - %s</label>', $upline['login'], $upline['name_f'] . ' ' . $upline['name_l']);
+              $html .= "<ul>";
+              foreach ($downlines as $key => $downline) {
+                $html .= render($downline);
+              }
+              $html .= "</ul>";
+              $html .= "</li>";
+            }else{
+              $html = sprintf('<li>
+                  <input type="checkbox" class="expander" disabled>
+                  <span class="expander"></span>
+                  <label>%s - %s</label>
+              </li>', $upline['login'], $upline['name_f'] . ' ' . $upline['name_l']);
+            }
+
+            return $html;
+
+        }
+
+        $uplines = $this->getDi()->db->select("SELECT * FROM ?_user WHERE aff_id = {$user->user_id}");
+        $html = "";
+        foreach ($uplines as $key => $upline) {
+          $html .= render($upline);
+        }
+        $this->view->tree = $html;
+        $this->view->user = $user;
+        $this->view->display('aff/treeview.phtml');
+    }
+
     public function exportDetailsAction()
     {
         if (!$this->getModule()->getConfig('affiliate_can_view_details')) {
