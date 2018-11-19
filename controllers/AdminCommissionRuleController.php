@@ -186,15 +186,16 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
         }
         //COMMISSION FOR FIRST PAYMENT
         $price_field = (float)$invoice->first_total ? 'first_total' : 'second_total';
+        $disc_field = (float)$invoice->first_discount ? 'first_discount' : 'second_discount';
         $prefix = (float)$invoice->first_total ? 'first_' : 'second_';
 
         if ((float)($invoice->$price_field)) {
             echo "\n<strong>FIRST PAYMENT ($invoice->currency {$invoice->$price_field})</strong>:\n";
-
             $payment = $this->grid->getDi()->invoicePaymentTable->createRecord();
             $payment->invoice_id = @$invoice->invoice_id;
             $payment->dattm = sqlTime('now');
-            $payment->amount = $invoice->$price_field;
+            // Amount diambil dari harga sebelum discount
+            $payment->amount = $invoice->$disc_field + $invoice->$price_field;
 
             $tax = $is_include_tax ? 0 : $invoice->{$prefix . 'tax'};
             $shipping = $invoice->{$prefix . 'shipping'};
@@ -212,7 +213,7 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
                 $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 1, 0, $amount, $payment->dattm);
                 echo "* AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";
                 for ($i=1; $i<=$max_tier; $i++) {
-                    $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 1, $i, $to_pay, $payment->dattm);
+                    $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 1, $i, $amount, $payment->dattm);
                     $tier = $i+1;
                     echo "* $tier-TIER AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";
                 }

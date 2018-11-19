@@ -571,7 +571,12 @@ class AffCommissionRuleTable extends Am_Table
             $tax = 0;
         else
             $tax = $this->getDi()->config->get('aff.commission_include_tax', false) ? 0 : doubleval($payment->tax);
-        $amount  = $payment ? ($payment->amount - $payment->shipping - $tax): 0;
+
+        // Amount diambil harga sebelum diskon
+        $price_field = (float)$invoice->first_total ? 'first_total' : 'second_total';
+        $disc_field = (float)$invoice->first_discount ? 'first_discount' : 'second_discount';
+        $realAmount = $invoice->$disc_field + $invoice->$price_field;
+        $amount  = $payment ? ($realAmount - $payment->shipping - $tax): 0;
         $date    = $payment ? $payment->dattm : 'now';
         // now calculate commissions
         $items = is_null($payment) ? array_slice($invoice->getItems(), 0, 1) : $invoice->getItems();
@@ -612,7 +617,8 @@ class AffCommissionRuleTable extends Am_Table
 
             foreach ($aff_tiers as $tier => $aff_tier) {
                 $rules = array();
-                $topay_this = $this->calculate($invoice, $item, $aff_tier, $paymentNumber, $tier, $topay_this, $date, $rules);
+                // Update presentasi diambil dari total transaksi
+                $topay_this = $this->calculate($invoice, $item, $aff_tier, $paymentNumber, $tier, $amount, $date, $rules);
                 if ($topay_this>0)
                 {
                     $comm_this = clone $comm_tier;
