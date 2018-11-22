@@ -55,10 +55,10 @@ class Aff_AdminTreeviewController extends Am_Mvc_Controller
             return $html;
 
         }
-
+        $html = "";
         $uplines = $this->getDi()->db->select("SELECT * FROM ?_user WHERE aff_id IS NULL");
         foreach ($uplines as $key => $upline) {
-          $html = render($upline);
+          $html .= render($upline);
         }
 
         // echo "<pre>";
