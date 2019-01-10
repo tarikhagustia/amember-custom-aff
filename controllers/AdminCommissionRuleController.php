@@ -213,6 +213,7 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
                 $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 1, 0, $amount, $payment->dattm);
                 echo "* AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";
                 for ($i=1; $i<=$max_tier; $i++) {
+                    $amount = ($to_pay <= 0) ? 0 : $amount;
                     $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 1, $i, $amount, $payment->dattm);
                     $tier = $i+1;
                     echo "* $tier-TIER AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";

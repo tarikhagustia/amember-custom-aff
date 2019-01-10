@@ -603,7 +603,7 @@ class AffCommissionRuleTable extends Am_Table
             $comm_tier = clone $comm;
 
             $rules = array();
-            $topay_this = $topay = $this->calculate($invoice, $item, $aff, $paymentNumber, 0, $amount, $date, $rules);
+            $topay_this_one = $topay = $this->calculate($invoice, $item, $aff, $paymentNumber, 0, $amount, $date, $rules);
             if ($topay>0)
             {
                 $comm->aff_id = $aff->pk();
@@ -617,6 +617,7 @@ class AffCommissionRuleTable extends Am_Table
 
             foreach ($aff_tiers as $tier => $aff_tier) {
                 $rules = array();
+                $amount = ($topay_this_one <= 0) ? 0 : $amount;
                 // Update presentasi diambil dari total transaksi
                 $topay_this = $this->calculate($invoice, $item, $aff_tier, $paymentNumber, $tier, $amount, $date, $rules);
                 if ($topay_this>0)
