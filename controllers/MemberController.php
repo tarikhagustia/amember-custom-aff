@@ -20,7 +20,7 @@ class Aff_MemberController extends Am_Mvc_Controller
 {
     /** @var User */
     protected $user;
-
+    protected $parent;
     public function preDispatch()
     {
         $this->getDi()->auth->requireLogin($this->getDi()->url('aff/member', null, false));
@@ -154,8 +154,8 @@ class Aff_MemberController extends Am_Mvc_Controller
     {
         $this->view->title = ___("Your downline");
         $user = $this->user;
-        function render($upline) {
-            $downlines = Am_Di::getInstance()->db->select("SELECT * FROM ?_user WHERE aff_id = {$upline['user_id']} ORDER BY LOGIN ASC");
+        function render($upline, $user) {
+            $downlines = Am_Di::getInstance()->db->select("SELECT * FROM ?_user WHERE aff_id = {$upline['user_id']} AND aff_id != {$user->user_id} ORDER BY LOGIN ASC");
             $html = "";
             if (count($downlines) > 0) {
               $html .= sprintf('<li>
@@ -164,7 +164,7 @@ class Aff_MemberController extends Am_Mvc_Controller
                   <label>%s - %s</label>', $upline['login'], $upline['name_f'] . ' ' . $upline['name_l']);
               $html .= "<ul>";
               foreach ($downlines as $key => $downline) {
-                $html .= render($downline);
+                $html .= render($downline, $user);
               }
               $html .= "</ul>";
               $html .= "</li>";
@@ -182,8 +182,9 @@ class Aff_MemberController extends Am_Mvc_Controller
 
         $uplines = $this->getDi()->db->select("SELECT * FROM ?_user WHERE aff_id = {$user->user_id}");
         $html = "";
+        $this->parent = $user->user_id;
         foreach ($uplines as $key => $upline) {
-          $html .= render($upline);
+          $html .= render($upline, $user);
         }
         $this->view->tree = $html;
         $this->view->user = $user;
