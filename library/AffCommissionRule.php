@@ -460,7 +460,8 @@ class AffCommissionRuleTable extends Am_Table
             else
                 $paidForItem = $paymentAmount * $item->get("{$prefix}_total") / $invoice->get("{$prefix}_total");
         } else { // for higher tier just take amount paid to previous tier
-            $paidForItem = $paymentAmount;
+//            $paidForItem = $paymentAmount;
+            $paidForItem = $paymentAmount * $item->get("{$prefix}_total") / $invoice->get("{$prefix}_total");
         }
         $paidForItem = $tier ? $paidForItem : $paidForItem/$invoice->base_currency_multi;
 
