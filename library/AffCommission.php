@@ -40,19 +40,39 @@ class AffCommission extends Am_Record
         $this->record_type = self::COMMISSION;
     }
 
-    public function _setPayment(InvoicePayment $payment=null){ $this->_payment = $payment; return $this; }
-    public function _setInvoice(Invoice $invoice){ $this->_invoice = $invoice; return $this; }
-    public function _setAff(User $aff){ $this->_aff = $aff; return $this; }
+    public function _setPayment(InvoicePayment $payment = null)
+    {
+        $this->_payment = $payment;
+        return $this;
+    }
+
+    public function _setInvoice(Invoice $invoice)
+    {
+        $this->_invoice = $invoice;
+        return $this;
+    }
+
+    public function _setAff(User $aff)
+    {
+        $this->_aff = $aff;
+        return $this;
+    }
+
     public function getPayment()
     {
         if (empty($this->invoice_payment_id)) return null;
-        return $this->_payment ? $this->_payment : $this->_payment=$this->getDi()->invoicePaymentTable->load($this->invoice_payment_id);
+        return $this->_payment ? $this->_payment : $this->_payment = $this->getDi()->invoicePaymentTable->load($this->invoice_payment_id);
     }
-    public function getAff()  { return $this->_aff ? $this->_aff : $this->_aff=$this->getDi()->userTable->load($this->aff_id); }
+
+    public function getAff()
+    {
+        return $this->_aff ? $this->_aff : $this->_aff = $this->getDi()->userTable->load($this->aff_id);
+    }
+
     public function getInvoice()
     {
         if (empty($this->invoice_id)) return null;
-        return $this->_invoice ? $this->_invoice : $this->_invoice=$this->getDi()->invoiceTable->load($this->invoice_id);
+        return $this->_invoice ? $this->_invoice : $this->_invoice = $this->getDi()->invoiceTable->load($this->invoice_id);
     }
 
     public function getProduct()
@@ -68,10 +88,10 @@ class AffCommission extends Am_Record
         $ret = parent::insert($reload);
         $this->getDi()->hook->call(Bootstrap_Aff::AFF_COMMISSION_AFTER_INSERT, array(
             'commission' => $this,
-            'user'       => $this->getInvoice() ? $this->getInvoice()->getUser() : null,
-            'aff'        => $this->getAff(),
-            'invoice'    => $this->getInvoice(),
-            'payment'    => $this->getPayment(),
+            'user' => $this->getInvoice() ? $this->getInvoice()->getUser() : null,
+            'aff' => $this->getAff(),
+            'invoice' => $this->getInvoice(),
+            'payment' => $this->getPayment(),
         ));
         return $ret;
     }
@@ -87,7 +107,7 @@ class AffCommission extends Am_Record
     {
         $this->getAdapter()->query("DELETE FROM ?_aff_commission_commission_rule
             WHERE commission_id=?d {AND rule_id NOT IN (?a)}",
-                $this->pk(), $rules ? $rules : DBSIMPLE_SKIP);
+            $this->pk(), $rules ? $rules : DBSIMPLE_SKIP);
         if ($rules) {
             $vals = array();
             foreach ($rules as $id)
@@ -98,10 +118,10 @@ class AffCommission extends Am_Record
 
             $this->getDi()->hook->call(Bootstrap_Aff::AFF_COMMISSION_COMMISSION_RULE_AFTER_INSERT, array(
                 'commission' => $this,
-                'user'       => $this->getInvoice() ? $this->getInvoice()->getUser() : null,
-                'aff'        => $this->getAff(),
-                'invoice'    => $this->getInvoice(),
-                'payment'    => $this->getPayment(),
+                'user' => $this->getInvoice() ? $this->getInvoice()->getUser() : null,
+                'aff' => $this->getAff(),
+                'invoice' => $this->getInvoice(),
+                'payment' => $this->getPayment(),
             ));
         }
 
@@ -109,7 +129,8 @@ class AffCommission extends Am_Record
     }
 }
 
-class AffCommissionTable extends Am_Table {
+class AffCommissionTable extends Am_Table
+{
     protected $_key = 'commission_id';
     protected $_table = '?_aff_commission';
     protected $_recordClass = 'AffCommission';
@@ -119,20 +140,20 @@ class AffCommissionTable extends Am_Table {
      * made up to $toDate
      * @return Am_Query
      */
-    function fetchByDate($date, $aff_id=null)
+    function fetchByDate($date, $aff_id = null)
     {
         return $this->selectObjects(
-                "SELECT * FROM ?_aff_commission WHERE `date` = ? { AND aff_id=?d}",
-                date('Y-m-d', amstrtotime($date)), $aff_id === null ? DBSIMPLE_SKIP : $aff_id);
+            "SELECT * FROM ?_aff_commission WHERE `date` = ? { AND aff_id=?d}",
+            date('Y-m-d', amstrtotime($date)), $aff_id === null ? DBSIMPLE_SKIP : $aff_id);
     }
 
-    function fetchByDateInterval($from, $to, $aff_id=null)
+    function fetchByDateInterval($from, $to, $aff_id = null)
     {
         return $this->selectObjects(
-                "SELECT c.*, p.title AS product_title FROM ?_aff_commission c
+            "SELECT c.*, p.title AS product_title FROM ?_aff_commission c
                     LEFT JOIN ?_product p USING(product_id)
                     WHERE `date` BETWEEN ? AND ? { AND aff_id=?d}",
-                date('Y-m-d', amstrtotime($from)), date('Y-m-d', amstrtotime($to)), $aff_id === null ? DBSIMPLE_SKIP : $aff_id);
+            date('Y-m-d', amstrtotime($from)), date('Y-m-d', amstrtotime($to)), $aff_id === null ? DBSIMPLE_SKIP : $aff_id);
     }
 
     /**
@@ -172,7 +193,7 @@ class AffCommissionTable extends Am_Table {
             , $invoice_id, $invoice_id);
     }
 
-    
+
     function runPayoutForGroup($date, $days, $groups = null, $excludeGroups = null)
     {
         $threseholdDate = sqlDate(amstrtotime($date) - 24 * 3600 * $days);
@@ -194,23 +215,21 @@ class AffCommissionTable extends Am_Table {
                 AND a.aff_payout_type > ''
                 {AND _have_groups > 0 AND 1=?} 
                 {AND _have_groups = 0 AND 1=?} 
-        ", 
-            AffCommission::VOID, 
-            (empty($groups) && empty($excludeGroups) ? DBSIMPLE_SKIP : '1'), 
-            (empty($groups) && empty($excludeGroups) ? DBSIMPLE_SKIP : ($groups ?: $excludeGroups)), 
-            AffCommission::VOID, 
-            $threseholdDate, 
-            (double) $this->getDi()->config->get('aff.payout_min', 0), 
-            !empty($groups) ? 1 : DBSIMPLE_SKIP, 
+        ",
+            AffCommission::VOID,
+            (empty($groups) && empty($excludeGroups) ? DBSIMPLE_SKIP : '1'),
+            (empty($groups) && empty($excludeGroups) ? DBSIMPLE_SKIP : ($groups ?: $excludeGroups)),
+            AffCommission::VOID,
+            $threseholdDate,
+            (double)$this->getDi()->config->get('aff.payout_min', 0),
+            !empty($groups) ? 1 : DBSIMPLE_SKIP,
             !empty($excludeGroups) ? 1 : DBSIMPLE_SKIP
         );
         // then do job
         $payouts = [];
-        while ($row = $this->_db->fetchRow($q))
-        {
+        while ($row = $this->_db->fetchRow($q)) {
             $aff = $this->getDi()->userTable->createRecord($row);
-            if (empty($payouts[$aff->aff_payout_type]))
-            {
+            if (empty($payouts[$aff->aff_payout_type])) {
                 $payout = $this->getDi()->affPayoutRecord;
                 $payout->type = $aff->aff_payout_type;
                 $payout->date = sqlDate($date);
@@ -234,11 +253,9 @@ class AffCommissionTable extends Am_Table {
     function runPayout($date)
     {
         $all_groups = $to_check = [];
-        if (($custom_delay = $this->getDi()->config->get('aff.custom_payout_delay')) && !empty($custom_delay))
-        {
+        if (($custom_delay = $this->getDi()->config->get('aff.custom_payout_delay')) && !empty($custom_delay)) {
 
-            foreach ($custom_delay as $gid => $days)
-            {
+            foreach ($custom_delay as $gid => $days) {
                 $days = intval($days);
                 $gid = intval($gid);
                 if (!$days || !$gid)
@@ -248,8 +265,7 @@ class AffCommissionTable extends Am_Table {
                 $to_check[$days][] = $gid;
             }
 
-            foreach ($to_check as $days => $groups)
-            {
+            foreach ($to_check as $days => $groups) {
                 $all_groups = array_merge($all_groups, $groups);
             }
             $all_groups = array_unique($all_groups);
@@ -258,15 +274,13 @@ class AffCommissionTable extends Am_Table {
         $payouts = [];
 
         ksort($to_check); // handle lowest first;
+        foreach ($to_check as $days => $groups) {
 
-        foreach ($to_check as $days => $groups)
-        {
             $payouts = array_merge($payouts, $this->runPayoutForGroup($date, $days, $groups, is_null($groups) ? $all_groups : null));
         }
         foreach ($payouts as $payout)
             $payout->update(); // store totals
-        if ($payouts)
-        {
+        if ($payouts) {
             $this->getDi()->hook->call(Bootstrap_Aff::AFF_PAYOUT, array(
                 'payouts' => $payouts
             ));
@@ -287,13 +301,10 @@ class AffCommissionTable extends Am_Table {
         $void->is_voided = 0;
         if ($amount)
             $void->amount = $amount;
-        try
-        {
+        try {
             $void->insert();
             $comm->updateQuick('is_voided', 1);
-        }
-        catch (Am_Exception_Db_NotUnique $e)
-        {
+        } catch (Am_Exception_Db_NotUnique $e) {
             // already handled?
             if (!$comm->is_voided)
                 $comm->updateQuick('is_voided', 1);
@@ -306,7 +317,7 @@ class AffCommissionTable extends Am_Table {
             WHERE date BETWEEN ? AND ?",
             sqlDate($start), sqlDate($stop));
     }
-    
+
     function selectLast($num)
     {
         return $this->selectObjects(

@@ -150,6 +150,12 @@ class Aff_MemberController extends Am_Mvc_Controller
         $this->view->display('aff/stats.phtml');
     }
 
+    /**
+     * @deprecated
+     * @deprecated 1.0.0
+     * @deprecated No longer used by internal code and not recommended.
+     * @deprecated 1.0.0 No longer used by internal code and not recommended.
+     */
     public function treeviewAction()
     {
         $this->view->title = ___("Your downline");

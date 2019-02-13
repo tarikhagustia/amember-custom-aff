@@ -24,6 +24,7 @@ class Am_Grid_Action_AddTier extends Am_Grid_Action_Abstract
 
         $this->grid->redirectBack();
     }
+
     /**
      * @return Am_Di
      */
@@ -91,7 +92,7 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
             $el->setError(___('User %s not found', $vars['user']));
             return false;
         }
-        $aff  = $this->grid->getDi()->userTable->findFirstByLogin($vars['aff']);
+        $aff = $this->grid->getDi()->userTable->findFirstByLogin($vars['aff']);
         if (!$aff) {
             list($el) = $f->getElementsByName('aff');
             $el->setError(___('Affiliate %s not found', $vars['user']));
@@ -115,8 +116,7 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
             if ($error) throw new Am_Exception_InputError($error);
         }
         $user->aff_id = $aff->pk();
-        foreach ($vars['product_id'] as $plan_id => $qty)
-        {
+        foreach ($vars['product_id'] as $plan_id => $qty) {
             $p = $this->grid->getDi()->billingPlanTable->load($plan_id);
             $pr = $p->getProduct();
             $invoice->add($pr, $qty);
@@ -134,7 +134,7 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
         echo $invoice->render();
         echo
             "\nBilling Terms: " . $invoice->getTerms() .
-            "\n".str_repeat("-", 70)."\n";
+            "\n" . str_repeat("-", 70) . "\n";
 
         $helper = new Am_View_Helper_UserUrl();
         $helper->setView(new Am_View);
@@ -169,16 +169,15 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
             list($item,) = $invoice->getItems();
 
             echo sprintf("* ITEM: %d &times; %s\n", $item->qty, Am_Html::escape($item->item_title));
-            foreach (Am_Di::getInstance()->affCommissionRuleTable->findRules($invoice, $item, $aff, 0, 0) as $rule)
-            {
+            foreach (Am_Di::getInstance()->affCommissionRuleTable->findRules($invoice, $item, $aff, 0, 0) as $rule) {
                 echo $rule->render('*   ');
             }
 
             $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 0, 0);
             echo "* AFFILIATE WILL GET FOR THIS ITEM: " . Am_Currency::render($to_pay) . "\n";
-            for ($i=1; $i<=$max_tier; $i++) {
+            for ($i = 1; $i <= $max_tier; $i++) {
                 $to_pay = Am_Di::getInstance()->affCommissionRuleTable->calculate($invoice, $item, $aff, 0, $i, $to_pay);
-                $tier = $i+1;
+                $tier = $i + 1;
                 echo "* $tier-TIER AFFILIATE WILL GET FOR THIS ITEM: " . Am_Currency::render($to_pay) . "\n";
             }
             echo str_repeat("-", 70) . "\n";
@@ -199,31 +198,28 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
 
             $tax = $is_include_tax ? 0 : $invoice->{$prefix . 'tax'};
             $shipping = $invoice->{$prefix . 'shipping'};
-            $amount  = $payment->amount - $shipping - $tax;
+            $amount = $payment->amount - $shipping - $tax;
 
             echo str_repeat("-", 70) . "\n";
-            foreach ($invoice->getItems() as $item)
-            {
+            foreach ($invoice->getItems() as $item) {
                 if (!(float)($item->$price_field)) continue; //do not calculate commission for free items within invoice
                 echo sprintf("* ITEM: %d &times; %s ($invoice->currency {$item->$price_field})\n", $item->qty, Am_Html::escape($item->item_title));
-                foreach ($this->grid->getDi()->affCommissionRuleTable->findRules($invoice, $item, $aff, 1, 0, $payment->dattm) as $rule)
-                {
+                foreach ($this->grid->getDi()->affCommissionRuleTable->findRules($invoice, $item, $aff, 1, 0, $payment->dattm) as $rule) {
                     echo $rule->render('*   ');
                 }
                 $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 1, 0, $amount, $payment->dattm);
                 echo "* AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";
-                for ($i=1; $i<=$max_tier; $i++) {
+                for ($i = 1; $i <= $max_tier; $i++) {
                     $amount = ($to_pay <= 0) ? 0 : $amount;
                     $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 1, $i, $amount, $payment->dattm);
-                    $tier = $i+1;
+                    $tier = $i + 1;
                     echo "* $tier-TIER AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";
                 }
                 echo str_repeat("-", 70) . "\n";
             }
         }
         //COMMISSION FOR SECOND AND SUBSEQUENT PAYMENTS
-        if ((float)$invoice->second_total)
-        {
+        if ((float)$invoice->second_total) {
             echo "\n<strong>SECOND AND SUBSEQUENT PAYMENTS ($invoice->second_total $invoice->currency)</strong>:\n";
             $payment = $this->grid->getDi()->invoicePaymentTable->createRecord();
             $payment->invoice_id = @$invoice->invoice_id;
@@ -232,22 +228,20 @@ class Am_Grid_Action_TestAffCommissionRule extends Am_Grid_Action_Abstract
 
             $tax = $is_include_tax ? 0 : $invoice->second_tax;
             $shipping = $invoice->second_shipping;
-            $amount  = $payment->amount - $shipping - $tax;
+            $amount = $payment->amount - $shipping - $tax;
 
             echo str_repeat("-", 70) . "\n";
-            foreach ($invoice->getItems() as $item)
-            {
+            foreach ($invoice->getItems() as $item) {
                 if (!(float)$item->second_total) continue; //do not calculate commission for free items within invoice
                 echo sprintf("* ITEM: %d &times; %s ($item->second_total $invoice->currency)\n", $item->qty, Am_Html::escape($item->item_title));
-                foreach ($this->grid->getDi()->affCommissionRuleTable->findRules($invoice, $item, $aff, 2, 0, $payment->dattm) as $rule)
-                {
+                foreach ($this->grid->getDi()->affCommissionRuleTable->findRules($invoice, $item, $aff, 2, 0, $payment->dattm) as $rule) {
                     echo $rule->render('*   ');
                 }
                 $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 2, 0, $amount, $payment->dattm);
                 echo "* AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";
-                for ($i=1; $i<=$max_tier; $i++) {
+                for ($i = 1; $i <= $max_tier; $i++) {
                     $to_pay = $this->grid->getDi()->affCommissionRuleTable->calculate($invoice, $item, $aff, 2, $i, $amount, $payment->dattm);
-                    $tier = $i+1;
+                    $tier = $i + 1;
                     echo "* $tier-TIER AFFILIATE WILL GET FOR THIS ITEM: <strong>" . Am_Currency::render($to_pay) . "</strong>\n";
                 }
                 echo str_repeat("-", 70) . "\n";
@@ -287,8 +281,7 @@ jQuery(function(){
 });
 CUT
         );
-        foreach ($this->grid->getVariablesList() as $k)
-        {
+        foreach ($this->grid->getVariablesList() as $k) {
             $kk = $this->grid->getId() . '_' . $k;
             if ($v = @$_REQUEST[$kk]) {
                 $f->addHidden($kk)->setValue($v);
@@ -307,11 +300,11 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
         $url = $this->getDi()->url('admin-setup/aff');
         return parent::renderTable() .
             ___('<p>For each item in purchase, aMember will look through all rules, from top to bottom. ' .
-'If it finds a matching multiplier, it will be remembered. ' .
-'If it finds a matching custom rule, it takes commission rates from it. ' .
-'If no matching custom rule was found, it uses "Default" commission settings.</p>' .
-'<p>For n-tier affiliates, no rules are used, you can just define percentage of commission earned by previous level.</p>') .
-        '<p><a class="link" target="_top" href="'.$url.'">' . ___('Check other Affiliate Program Settings') . '</a></p>';
+                'If it finds a matching multiplier, it will be remembered. ' .
+                'If it finds a matching custom rule, it takes commission rates from it. ' .
+                'If no matching custom rule was found, it uses "Default" commission settings.</p>' .
+                '<p>For n-tier affiliates, no rules are used, you can just define percentage of commission earned by previous level.</p>') .
+            '<p><a class="link" target="_top" href="' . $url . '">' . ___('Check other Affiliate Program Settings') . '</a></p>';
     }
 
     public function __construct(Am_Mvc_Request $request, Am_View $view)
@@ -336,7 +329,7 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
         }
         $this->actionAdd(new Am_Grid_Action_TestAffCommissionRule());
 
-        $this->setForm(array($this,'createConfigForm'));
+        $this->setForm(array($this, 'createConfigForm'));
         $this->addCallback(Am_Grid_Editable::CB_VALUES_TO_FORM, array($this, '_valuesToForm'));
         $this->addCallback(Am_Grid_Editable::CB_VALUES_FROM_FORM, array($this, '_valuesFromForm'));
     }
@@ -360,7 +353,7 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
     public function renderComment(AffCommissionRule $rule)
     {
         if ($rule->isGlobal()) {
-            $text = '<strong>'.$rule->comment.'</strong>';
+            $text = '<strong>' . $rule->comment . '</strong>';
         } else {
             $text = $this->escape($rule->comment);
         }
@@ -383,6 +376,7 @@ class Am_Grid_Editable_AffCommissionRule extends Am_Grid_Editable
             $values['_conditions_status'][$k] = 1; //enabled
         }
     }
+
     public function _valuesFromForm(& $values, AffCommissionRule $record)
     {
         $values['free_signup_t'] = '$';
@@ -501,7 +495,7 @@ jQuery(function(){
     }).change()
 });
 CUT
-);
+        );
 
         $comment = $form->addText('comment', array('class' => 'el-wide'))
             ->setLabel(___('Rule title - for your own reference'));
@@ -522,7 +516,7 @@ CUT
         }
         if (!$record->isGlobal()) // add conditions
         {
-            $set = $form->addFieldset('', array('id'=>'conditions'))
+            $set = $form->addFieldset('', array('id' => 'conditions'))
                 ->setLabel(___('Conditions'));
             $set->addSelect('', array('id' => 'condition-select'))
                 ->setLabel(___('Add Condition'))
@@ -553,14 +547,14 @@ CUT
                         'aff_not_product_id' => ___('By Affiliate Not Active Product'),
                         'aff_not_product_category_id' => ___('By Affiliate Not Active Product Category'),
                     )
-            ));
+                ));
 
             $set->addHidden('_conditions_status[product_id]');
 
             $set->addMagicSelect('_conditions[product_id]', array('id' => 'product_id'))
                 ->setLabel(___("This rule is for particular products\n" .
                     'if none specified, rule works for all products'))
-               ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
+                ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
 
             $set->addHidden('_conditions_status[product_category_id]');
 
@@ -574,14 +568,14 @@ CUT
             $set->addMagicSelect('_conditions[billing_plan_id]', array('id' => 'billing_plan_id'))
                 ->setLabel(___("This rule is for particular billing plan\n" .
                     'if none specified, rule works for all billing plans'))
-               ->loadOptions(Am_Di::getInstance()->billingPlanTable->getOptions());
+                ->loadOptions(Am_Di::getInstance()->billingPlanTable->getOptions());
 
             $set->addHidden('_conditions_status[not_product_id]');
 
             $set->addMagicSelect('_conditions[not_product_id]', array('id' => 'not_product_id'))
                 ->setLabel(___("Product is not\n" .
                     'if none specified, rule works for all products'))
-               ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
+                ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
 
             $set->addHidden('_conditions_status[not_product_category_id]');
 
@@ -595,7 +589,7 @@ CUT
             $set->addMagicSelect('_conditions[not_billing_plan_id]', array('id' => 'not_billing_plan_id'))
                 ->setLabel(___("Billing PLan is not\n" .
                     'if none specified, rule works for all billing plans'))
-               ->loadOptions(Am_Di::getInstance()->billingPlanTable->getOptions());
+                ->loadOptions(Am_Di::getInstance()->billingPlanTable->getOptions());
 
             $set->addHidden('_conditions_status[aff_group_id]');
 
@@ -608,39 +602,39 @@ CUT
 
             $gr = $set->addGroup('_conditions[aff_sales_count]', array('id' => 'aff_sales_count'))
                 ->setLabel(___("Affiliate sales count\n" .
-                "trigger this commission if affiliate made more than ... sales within ... days before the current date\n" .
-                "(only count of new invoices is calculated)"
+                    "trigger this commission if affiliate made more than ... sales within ... days before the current date\n" .
+                    "(only count of new invoices is calculated)"
                 ));
             $gr->addStatic()->setContent('use only if affiliate referred ');
-            $gr->addInteger('count', array('size'=>4));
+            $gr->addInteger('count', array('size' => 4));
             $gr->addStatic()->setContent(' invoices within last ');
-            $gr->addInteger('days', array('size'=>4));
+            $gr->addInteger('days', array('size' => 4));
             $gr->addStatic()->setContent(' days');
 
             $set->addHidden('_conditions_status[aff_items_count]');
 
             $gr = $set->addGroup('_conditions[aff_items_count]', array('id' => 'aff_items_count'))
                 ->setLabel(___("Affiliate items count\n" .
-                "trigger this commission if affiliate made more than ... item sales within ... days before the current date\n" .
-                "(only count of items in new invoices is calculated"
+                    "trigger this commission if affiliate made more than ... item sales within ... days before the current date\n" .
+                    "(only count of items in new invoices is calculated"
                 ));
             $gr->addStatic()->setContent(___('use only if affiliate made '));
-            $gr->addInteger('count', array('size'=>4));
+            $gr->addInteger('count', array('size' => 4));
             $gr->addStatic()->setContent(___(' item sales within last '));
-            $gr->addInteger('days', array('size'=>4));
+            $gr->addInteger('days', array('size' => 4));
             $gr->addStatic()->setContent(___(' days'));
 
             $set->addHidden('_conditions_status[aff_sales_amount]');
 
             $gr = $set->addGroup('_conditions[aff_sales_amount]', array('id' => 'aff_sales_amount'))
                 ->setLabel(___("Affiliate sales amount\n" .
-                "trigger this commission if affiliate made more than ... sales within ... days before the current date\n" .
-                "(only new invoices calculated)"
+                    "trigger this commission if affiliate made more than ... sales within ... days before the current date\n" .
+                    "(only new invoices calculated)"
                 ));
             $gr->addStatic()->setContent(___('use only if affiliate made '));
-            $gr->addInteger('count', array('size'=>4));
-            $gr->addStatic()->setContent(' ' .Am_Currency::getDefault(). ___(' in total sales amount within last '));
-            $gr->addInteger('days', array('size'=>4));
+            $gr->addInteger('count', array('size' => 4));
+            $gr->addStatic()->setContent(' ' . Am_Currency::getDefault() . ___(' in total sales amount within last '));
+            $gr->addInteger('days', array('size' => 4));
             $gr->addStatic()->setContent(___(' days'));
 
             $set->addHidden('_conditions_status[coupon]');
@@ -650,28 +644,28 @@ CUT
             $gr->setSeparator(' ');
             $gr->addSelect('used')
                 ->loadOptions(array(
-                   '1' => ___('Used'),
-                   '0' => ___("Didn't Use")
+                    '1' => ___('Used'),
+                    '0' => ___("Didn't Use")
                 ));
             $gr->addSelect('type')
                 ->setId('used-type')
                 ->loadOptions(array(
-                   'any' => ___('Any Coupon'),
-                   'batch' => ___("Coupon From Batch"),
-                   'coupon' => ___("Specific Coupon")
+                    'any' => ___('Any Coupon'),
+                    'batch' => ___("Coupon From Batch"),
+                    'coupon' => ___("Specific Coupon")
                 ));
             $gr->addSelect('batch_id')
                 ->setId('used-batch_id')
                 ->loadOptions(
-                $this->getDi()->couponBatchTable->getOptions()
-            );
-            $gr->addText('code', array('size'=>10))
+                    $this->getDi()->couponBatchTable->getOptions()
+                );
+            $gr->addText('code', array('size' => 10))
                 ->setId('used-code');
 
             $set->addHidden('_conditions_status[paysys_id]');
             $set->addMagicSelect('_conditions[paysys_id]', array('id' => 'paysys_id'))
                 ->setLabel(___('This rule is for particular payment system'))
-               ->loadOptions(Am_Di::getInstance()->paysystemList->getOptions());
+                ->loadOptions(Am_Di::getInstance()->paysystemList->getOptions());
 
             $set->addHidden('_conditions_status[first_time]');
             $set->addStatic('_conditions[first_time]', array('id' => 'first_time'))
@@ -695,7 +689,7 @@ CUT
 
             $set->addMagicSelect('_conditions[aff_product_id]', array('id' => 'aff_product_id'))
                 ->setLabel(___("Apply this rule if affiliate has active access to"))
-               ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
+                ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
 
             $set->addHidden('_conditions_status[aff_product_category_id]');
 
@@ -707,7 +701,7 @@ CUT
 
             $set->addMagicSelect('_conditions[aff_not_product_id]', array('id' => 'aff_not_product_id'))
                 ->setLabel(___("Apply this rule if affiliate has not active access to"))
-               ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
+                ->loadOptions(Am_Di::getInstance()->productTable->getOptions());
 
             $set->addHidden('_conditions_status[aff_not_product_category_id]');
 
@@ -718,30 +712,26 @@ CUT
 
         $set = $form->addFieldset('', array('id' => 'commission'))->setLabel('Commission');
 
-        if ($record->tier == 0)
-        {
+        if ($record->tier == 0) {
             $set->addElement(new Am_Form_Element_AffCommissionSize(null, null, 'first_payment'))
                 ->setLabel(___("Commission for First Payment\ncalculated for first payment in each invoice"));
             $set->addElement(new Am_Form_Element_AffCommissionSize(null, null, 'recurring'))
                 ->setLabel(___("Commission for Rebills"));
             $group = $set->addGroup('')
                 ->setLabel(___("Commission for Free Signup\ncalculated for first customer invoice only"));
-            $group->addText('free_signup_c', array('size'=>5));
-            $group->addStatic()->setContent('&nbsp;&nbsp;' . Am_Currency::getDefault());
-                ;//->addRule('gte', 'Value must be a valid number > 0, or empty (no text)', 0);
+            $group->addText('free_signup_c', array('size' => 5));
+            $group->addStatic()->setContent('&nbsp;&nbsp;' . Am_Currency::getDefault());;//->addRule('gte', 'Value must be a valid number > 0, or empty (no text)', 0);
         } else {
-            $set->addText('first_payment_c')
-                ->setLabel(___("Commission\n% of commission received by referred affiliate"));
+            $set->addElement(new Am_Form_Element_AffCommissionSize(null, null, 'first_payment'))
+                ->setLabel(___("Commission\nvalue of commission received by referred affiliate on payment"));
             $set->addElement(new Am_Form_Element_AffCommissionSize(null, null, 'recurring'))
                 ->setLabel(___("Commission for Rebills\n% of commission received by referred affiliate on recurring payment"));
         }
-        if (!$record->isGlobal())
-        {
+        if (!$record->isGlobal()) {
             $set = $form->addFieldset('', array('id' => 'multiplier'))->setLabel('Multipier');
             $set->addText('multi', array('size' => 5, 'placeholder' => '1.0'))
                 ->setLabel(___("Multiply commission calculated by the following rules\n" .
-                    "to number specified in this field. To keep commission untouched, enter 1 or delete this rule"))
-                ;//->addRule('gt', 'Values must be greater than 0.0', 0.0);
+                    "to number specified in this field. To keep commission untouched, enter 1 or delete this rule"));//->addRule('gt', 'Values must be greater than 0.0', 0.0);
         }
         return $form;
     }
